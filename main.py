@@ -10,16 +10,17 @@ def llegeixFitxers(fitxer1, fitxer2):
 
     return paraules, tauler
 
-def ordenaParaules(paraules):
+def ordenaISeleccionaParaules(paraules):
     pars = {}
     for paraula in paraules:
-        p = paraula.strip() #Treu el \n.
-        l = len(p)
+        if len(paraula > 2) and len(paraula <= 5):
+            p = paraula.strip() #Treu el \n.
+            l = len(p)
 
-        if l in pars.keys():
-            pars[l].append(p)
-        else:
-            pars[l] = [p]
+            if l in pars.keys():
+                pars[l].append(p)
+            else:
+                pars[l] = [p]
 
     pars = sorted(pars.items())
     return pars
