@@ -13,7 +13,7 @@ def llegeixFitxers(fitxer1, fitxer2):
 def ordenaISeleccionaParaules(paraules):
     pars = {}
     for paraula in paraules:
-        if len(paraula > 2) and len(paraula <= 5):
+        if len(paraula) > 2 and len(paraula) <= 5:
             p = paraula.strip() #Treu el \n.
             l = len(p)
 
