@@ -33,7 +33,7 @@ def llegeixFitxers(fitxer1, fitxer2):
 def ordenaISeleccionaParaules(paraules):
     pars = {}
     for paraula in paraules:
-        if len(paraula) > 2 and len(paraula) <= 5:
+        if len(paraula) > 2 and len(paraula) <= 7:
             p = paraula.strip() #Treu el \n.
             l = len(p)
 
@@ -50,31 +50,6 @@ def dividirTauler(tauler):
     id = 1
     comprova = np.zeros(tauler.shape) #Matriu per comprovar els crossings
 
-    #Horitzontals
-    for i, fila in enumerate(tauler): #Coordenada y
-        c = 0
-        for j, el in enumerate(fila): #Coordenada x
-            if el == '0':
-                c+=1
-                if (c == 6 or j == 5):
-                    if c > 1:
-                        tupla=(i, (j-c)+1)
-                        slots.append(slot(tupla , c , 0, None, id))
-                        for k in range((j-c)+1, j+1):
-                            comprova[i][k] = id
-                        id+=1
-                        c=0
-            else:
-                if c > 1:
-                    tupla = (i, (j-c))
-                    a = slot(tupla, c, 0, None, id)
-                    for k in range(j-c, j):
-                        comprova[i][k] = id
-                    id+=1
-                    slots.append(a)
-                c=0
-    
-    #Verticals
     for z, col in enumerate(tauler.T):
         c1 = 0
         crosses = []
@@ -96,12 +71,56 @@ def dividirTauler(tauler):
                     slots.append(a1)
                 c1=0
 
+    #Horitzontals
+    for i, fila in enumerate(tauler): #Coordenada y
+        c = 0
+        for j, el in enumerate(fila): #Coordenada x
+            if el == '0':
+                c+=1
+                if (c == 6 or j == 5):
+                    if c > 1:
+                        tupla=(i, (j-c)+1)
+                        slots.append(slot(tupla , c , 0, None, id))
+                        for k in range((j-c)+1, j+1):
+                            comprova[i][k] = id
+                        id+=1
+                        c=0
+            else:
+                if c > 1:
+                    tupla = (i, (j-c)+1)
+                    slots.append(slot(tupla, c, 0, None, id))
+                    for k in range((j-c)+1, j+1):
+                        comprova[i][k] = id
+                    id+=1
+                c=0
+    
+    #Verticals
+    for z, col in enumerate(tauler.T):
+        c1 = 0
+        crosses = []
+        for y, ele in enumerate(col):
+            if ele == '0':
+                if(comprova[y][z] != 0):
+                    crosses.append(((y, z), comprova[y][z]))
+
     return slots, comprova
+
+def satisfaRestriccions(paraula, slot): 
+    p = list(paraula)
+    if len(p) == slot.long:
+        satisfa = True
+        for j in range(slot.long):
+            if tauler[slot.posIn[0] + j][slot.posIn[1]] != '0' and tauler[slot.posIn[0] + j][slot.posIn[1]] != par[j]
+                satisfa = False
+                break
+        return satisfa
+    
+def backtracking(words, tauler, slots, comprova):
+    
+            
 
 paraules, tauler = llegeixFitxers('diccionari_CB_v3.txt', 'crossword_CB_v3.txt')
 words = ordenaISeleccionaParaules(paraules)
 slots, comprova = dividirTauler(tauler)
-print(comprova)
-
-for slot in slots:
-    print(slot)
+tauler = backtracking(words, tauler, slots, comprova)
+print(tauler)
