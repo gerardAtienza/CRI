@@ -115,8 +115,28 @@ def satisfaRestriccions(paraula, slot):
                 break
         return satisfa
     
+
+def posarParaulaTauler(slot, word):
+    substitucio = False
+    if satisfaRestriccions(word,slot):
+        if slot.orientacio == 0:
+            for index in slot.long:  #substituim horitzontalment la paraula al taulell
+                tauler[index+slots.posIn[0]][slot.posIn[1]] = words[word][index]
+        else:
+            for index in slot.long:  #substituim verticalment la paraula al taulell                  
+                tauler[slots.posIn[0]][index+slot.posIn[1]] = words[word][index]
+    else:
+        return substitucio
+    substitucio = True
+    return substitucio
+
+
 def backtracking(words, tauler, slots, comprova):
-    
+    for slot in slots:
+        for word in range(words):
+            if posarParaulaTauler(slot, word):
+                
+
             
 
 paraules, tauler = llegeixFitxers('diccionari_CB_v3.txt', 'crossword_CB_v3.txt')
