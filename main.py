@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 #Implementació dels mots encreuats utilitzant backtracking
 
 
@@ -9,6 +10,7 @@ class slot:
         self.orientacio = orientacio #0 = Horitzontal, 1 = Vertical
         self.cross = cross #Llista d'encreuaments ((x, y), id)
         self.id = id #Identificador del slot
+        self.pars = [] #Paraules adients al slot
         
 
 
@@ -30,46 +32,16 @@ def llegeixFitxers(fitxer1, fitxer2):
 
     return paraules, tauler
 
-def ordenaISeleccionaParaules(paraules):
-    pars = {}
-    for paraula in paraules:
-        if len(paraula) > 2 and len(paraula) <= 7:
-            p = paraula.strip() #Treu el \n.
-            l = len(p)
+def ordenaISeleccionaParaules(paraules, slots): #Funcio que inicialitza la llista de paraules del atribut pars de la classe slot
+    for slot in slots:
+        for paraula in paraules:
+            p = paraula.strip()
+            if slot.long == len(p):
+                slot.pars.append(p)
 
-            if l in pars.keys():
-                pars[l].append(p)
-            else:
-                pars[l] = [p]
-
-    pars = sorted(pars.items())
-    return pars
-
-def dividirTauler(tauler):
+def dividirTauler(tauler): #Funcio que inicialitza els slots en si
     slots = []
     id = 1
-    comprova = np.zeros(tauler.shape) #Matriu per comprovar els crossings
-
-    for z, col in enumerate(tauler.T):
-        c1 = 0
-        crosses = []
-        for y, ele in enumerate(col):
-            if ele == '0':
-                c1+=1
-                if(comprova[y][z] != 0):
-                    crosses.append(((y, z), comprova[y][z]))
-                if (c1 == 6 or y == 6):
-                    if c1 > 1:
-                        tupla=(z, (y-c1)+1)
-                        slots.append(slot(tupla , c1 , 1, crosses, id))
-                        id+=1
-                        c1=0
-            else:
-                if c1 > 1:
-                    a1 = slot((y-c1,z), c1, 1, crosses, id)
-                    id+=1
-                    slots.append(a1)
-                c1=0
 
     #Horitzontals
     for i, fila in enumerate(tauler): #Coordenada y
@@ -81,46 +53,99 @@ def dividirTauler(tauler):
                     if c > 1:
                         tupla=(i, (j-c)+1)
                         slots.append(slot(tupla , c , 0, None, id))
-                        for k in range((j-c)+1, j+1):
-                            comprova[i][k] = id
                         id+=1
                         c=0
             else:
                 if c > 1:
-                    tupla = (i, (j-c)+1)
+                    tupla = (i, (j-c))
                     slots.append(slot(tupla, c, 0, None, id))
-                    for k in range((j-c)+1, j+1):
-                        comprova[i][k] = id
                     id+=1
                 c=0
     
-    #Verticals
     for z, col in enumerate(tauler.T):
         c1 = 0
         crosses = []
         for y, ele in enumerate(col):
             if ele == '0':
-                if(comprova[y][z] != 0):
-                    crosses.append(((y, z), comprova[y][z]))
+                c1+=1
+                if (c1 == 6 or y == 6):
+                    if c1 > 1:
+                        tupla=(z, (y-c1)+1) #
+                        slots.append(slot(tupla , c1 , 1, crosses, id))
+                        id+=1
+                        c1=0
+            else:
+                if c1 > 1:
+                    a1 = slot((y-c1,z), c1, 1, crosses, id)
+                    id+=1
+                    slots.append(a1)
+                c1=0
 
-    return slots, comprova
+    return slots
 
-def satisfaRestriccions(paraula, slot): 
+def satisfaRestriccions(paraula, slot, tauler): #Funcio que mira si la paraula escollida compleix les restriccions imposades.
     p = list(paraula)
     if len(p) == slot.long:
-        satisfa = True
-        for j in range(slot.long):
-            if tauler[slot.posIn[0] + j][slot.posIn[1]] != '0' and tauler[slot.posIn[0] + j][slot.posIn[1]] != par[j]
-                satisfa = False
-                break
+        if slot.orientacio == 0:
+            satisfa = True
+            for j in range(slot.long-1):
+                f = slot.posIn[0]
+                c = slot.posIn[1]
+                if tauler[f][c+j] != '0' and tauler[f][c+j] != p[j]:
+                    satisfa = False
+                    break
+        else:
+            satisfa = True
+            for j in range(slot.long):
+                f = slot.posIn[1]
+                c = slot.posIn[0]
+                if tauler[f+j][c] != '0' and tauler[f+j][c] != p[j]:
+                    satisfa = False
+                    break
         return satisfa
     
-def backtracking(words, tauler, slots, comprova):
+def solucio(tauler, slots): #Comprovacio de si el tauler es una solucio completa o no
+    for fila in tauler:
+        if '0' in fila:
+            return False
+    return True
     
+def backtracking(tauler, slots, slot_id):
+    if slot_id == len(slots): #Si hem passat per tots els slots comprovem si es una solucio completa
+        return solucio(tauler, slots)
+
+    slot = slots[slot_id] #Slot que estem mirant ara
+    for par in slot.pars: #Per una de les paraules de la llista pars
+        if satisfaRestriccions(par, slot, tauler): #Mirem si satisfa les restriccions
+            estatAnterior = copy.deepcopy([fila[:] for fila in tauler]) #Guardem el estatAnterior a aquesta iteracio del backtracking per si falla i hem de tirar enrere
+
+            if slot.orientacio == 0: #Horitzontal (Enxufem la paraula al slot)
+                f = slot.posIn[0]
+                c = slot.posIn[1]
+                for i, lletra in enumerate(par):
+                    tauler[f][c+i] = par[i]
+            else: #Vertical (Enxufem la paraula al slot)
+                f = slot.posIn[1]
+                c = slot.posIn[0]
+                for i, lletra in enumerate(par):
+                    tauler[f+i][c] = par[i]
+            
+            for slot in slots: #Treiem la paraula de la llista de paraules perque no l'hem de fer servir mes
+                if slot.long == len(par):
+                    slot.pars.remove(par)
+            
+            if backtracking(tauler, slots, slot_id+1): #Anem a per el següent slot
+                
+                return True
+            
+            tauler = [fila[:] for fila in estatAnterior] #Si backtracking falla tornem el tauler al seu estat anterior per provar una nova paraula al slot i tirar endavant a veure si funciona
+    return False
             
 
 paraules, tauler = llegeixFitxers('diccionari_CB_v3.txt', 'crossword_CB_v3.txt')
-words = ordenaISeleccionaParaules(paraules)
-slots, comprova = dividirTauler(tauler)
-tauler = backtracking(words, tauler, slots, comprova)
-print(tauler)
+slots = dividirTauler(tauler)
+ordenaISeleccionaParaules(paraules, slots)
+if backtracking(tauler, slots, 0):
+    print(tauler)
+else:
+    print("No hi ha solucio bro")
