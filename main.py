@@ -104,6 +104,7 @@ def satisfaRestriccions(paraula, slot, tauler): #Funcio que mira si la paraula e
                     break
         return satisfa
     
+<<<<<<< HEAD
 def solucio(tauler, slots): #Comprovacio de si el tauler es una solucio completa o no
     for fila in tauler:
         if '0' in fila:
@@ -140,6 +141,30 @@ def backtracking(tauler, slots, slot_id):
             
             tauler = [fila[:] for fila in estatAnterior] #Si backtracking falla tornem el tauler al seu estat anterior per provar una nova paraula al slot i tirar endavant a veure si funciona
     return False
+=======
+
+def posarParaulaTauler(slot, word):
+    substitucio = False
+    if satisfaRestriccions(word,slot):
+        if slot.orientacio == 0:
+            for index in slot.long:  #substituim horitzontalment la paraula al taulell
+                tauler[index+slots.posIn[0]][slot.posIn[1]] = words[word][index]
+        else:
+            for index in slot.long:  #substituim verticalment la paraula al taulell                  
+                tauler[slots.posIn[0]][index+slot.posIn[1]] = words[word][index]
+    else:
+        return substitucio
+    substitucio = True
+    return substitucio
+
+
+def backtracking(words, tauler, slots, comprova):
+    for slot in slots:
+        for word in range(words):
+            if posarParaulaTauler(slot, word):
+                
+
+>>>>>>> 16f096c0637a9731b3eeb7f63279fea8a21c1435
             
 
 paraules, tauler = llegeixFitxers('diccionari_CB_v3.txt', 'crossword_CB_v3.txt')
