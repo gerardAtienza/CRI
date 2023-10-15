@@ -4,7 +4,7 @@ import copy
 
 
 class slot:
-    def _init_(self, posIn = (-1,-1), long = -1, orientacio = -1, cross = [((-1, -1), -1)], id = -1):
+    def __init__(self, posIn = (-1,-1), long = -1, orientacio = -1, cross = [((-1, -1), -1)], id = -1):
         self.posIn = posIn #Posicio Inicial
         self.long = long #Longitud del slot
         self.orientacio = orientacio #0 = Horitzontal, 1 = Vertical
@@ -62,6 +62,7 @@ def dividirTauler(tauler): #Funcio que inicialitza els slots en si
                     id+=1
                 c=0
     
+    #verticals
     for z, col in enumerate(tauler.T):
         c1 = 0
         crosses = []
@@ -83,15 +84,15 @@ def dividirTauler(tauler): #Funcio que inicialitza els slots en si
 
     return slots
 
-def satisfaRestriccions(paraula, slot, tauler): #Funcio que mira si la paraula escollida compleix les restriccions imposades.
+def satisfaRestriccions(paraula, slot, tauler):
     p = list(paraula)
     if len(p) == slot.long:
         if slot.orientacio == 0:
             satisfa = True
-            for j in range(slot.long-1):
+            for j in range(slot.long - 1):
                 f = slot.posIn[0]
                 c = slot.posIn[1]
-                if tauler[f][c+j] != '0' and tauler[f][c+j] != p[j]:
+                if f + j >= len(tauler) or c + j >= len(tauler[0]) or (tauler[f + j][c + j] != '0' and tauler[f + j][c + j] != p[j]):
                     satisfa = False
                     break
         else:
@@ -99,10 +100,13 @@ def satisfaRestriccions(paraula, slot, tauler): #Funcio que mira si la paraula e
             for j in range(slot.long):
                 f = slot.posIn[1]
                 c = slot.posIn[0]
-                if tauler[f+j][c] != '0' and tauler[f+j][c] != p[j]:
+                if f + j >= len(tauler) or c >= len(tauler[0]) or (tauler[f + j][c] != '0' and tauler[f + j][c] != p[j]):
                     satisfa = False
                     break
         return satisfa
+    else:
+        return False
+
     
 def solucio(tauler, slots): #Comprovacio de si el tauler es una solucio completa o no
     for fila in tauler:
