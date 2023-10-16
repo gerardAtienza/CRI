@@ -4,7 +4,7 @@ import copy
 
 
 class slot:
-    def __init__(self, posIn = (-1,-1), long = -1, orientacio = -1, id = -1):
+    def _init_(self, posIn = (-1,-1), long = -1, orientacio = -1, cross = [((-1, -1), -1)], id = -1):
         self.posIn = posIn #Posicio Inicial
         self.long = long #Longitud del slot
         self.orientacio = orientacio #0 = Horitzontal, 1 = Vertical
@@ -95,10 +95,12 @@ def satisfaRestriccions(paraula, slot, tauler):
             f = slot.posIn[0]
             c = slot.posIn[1]
             for j in range(slot.long):
-                if tauler[c + j][f] != '0' and tauler[c + j][f] != p[j]:
-                    return False
-        return True
-    return False
+                f = slot.posIn[1]
+                c = slot.posIn[0]
+                if tauler[f+j][c] != '0' and tauler[f+j][c] != p[j]:
+                    satisfa = False
+                    break
+        return satisfa
     
     
 def solucio(tauler, slots): #Comprovacio de si el tauler es una solucio completa o no
@@ -140,6 +142,7 @@ def backtracking(tauler, slots, slot_id, palabras_utilizadas):
 paraules, tauler = llegeixFitxers('diccionari_CB_v3.txt', 'crossword_CB_v3.txt')
 slots = dividirTauler(tauler)
 ordenaISeleccionaParaules(paraules, slots)
-pars = []
-if backtracking(tauler, slots, 0, pars) == False:
-    print("No hi ha una solucio completa")
+if backtracking(tauler, slots, 0):
+    print(tauler)
+else:
+    print("No hi ha solucio bro")
