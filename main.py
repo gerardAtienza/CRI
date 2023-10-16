@@ -84,15 +84,15 @@ def dividirTauler(tauler): #Funcio que inicialitza els slots en si
 
     return slots
 
-def satisfaRestriccions(paraula, slot, tauler):
+def satisfaRestriccions(paraula, slot, tauler): #Funcio que mira si la paraula escollida compleix les restriccions imposades.
     p = list(paraula)
     if len(p) == slot.long:
         if slot.orientacio == 0:
             satisfa = True
-            for j in range(slot.long - 1):
+            for j in range(slot.long-1):
                 f = slot.posIn[0]
                 c = slot.posIn[1]
-                if f + j >= len(tauler) or c + j >= len(tauler[0]) or (tauler[f + j][c + j] != '0' and tauler[f + j][c + j] != p[j]):
+                if tauler[f][c+j] != '0' and tauler[f][c+j] != p[j]:
                     satisfa = False
                     break
         else:
@@ -100,13 +100,12 @@ def satisfaRestriccions(paraula, slot, tauler):
             for j in range(slot.long):
                 f = slot.posIn[1]
                 c = slot.posIn[0]
-                if f + j >= len(tauler) or c >= len(tauler[0]) or (tauler[f + j][c] != '0' and tauler[f + j][c] != p[j]):
-                    satisfa = False
-                    break
+                if j+f > slot.long + slot.posIni[1]:
+                    if tauler[f+j][c] != '0' and tauler[f+j][c] != p[j]:
+                        satisfa = False
+                        break
         return satisfa
-    else:
-        return False
-
+    
     
 def solucio(tauler, slots): #Comprovacio de si el tauler es una solucio completa o no
     for fila in tauler:
