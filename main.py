@@ -134,75 +134,77 @@ def backtracking(tauler, slots, slot_id, palabras_utilizadas):
             tauler = estatAnterior #Si el backtracking falla, restaurem el tauler i provem una altra paraula en l'slot
     return False
 
-def ActualitzaDominis(tauler, slots, paraules_usades, anterior): #El que farà la funció es eliminar paraules de la llista de paraules dels slots si no compleixen les restriccions, per tal de reduir el temps de busqueda
-    p = " "
+def ActualitzaDominis(tauler, slots, paraules_usades): #El que farà la funció es eliminar paraules de la llista de paraules dels slots si no compleixen les restriccions, per tal de reduir el temps de busqueda
     for slot in slots:
-        if slot.orientacio == 0:
-            i = 0
-            f = slot.posIn[0]
-            c = slot.posIn[1]
-            while i in range(slot.long):
-                p = tauler[f][c + i]
-                for par in slot.pars:
-                    if p == par[i] or par in paraules_usades:
-                        anterior.append(par)
-                        slot.pars.remove(par)
-                i += 1
+        if not slot.pars:  # Si el slot ya está lleno, continúa con el siguiente
+            continue
 
-        if slot.orientacio == 1:
-            j = 0
-            f = slot.posIn[0]
-            c = slot.posIn[1]
-            while j in range(slot.long):
-                p = tauler[c + j][f]
-                for par in slot.pars:
-                    if p == par[j] or par in paraules_usades:
-                        anterior.append(par)
-                        slot.pars.remove(par)
-                j += 1
-    if not slot.pars:
-        return False
-    else:
-        return True
+        palabras_validas = []
+        f, c = slot.posIn[0], slot.posIn[1]
+
+        for par in slot.pars:
+            if par not in paraules_usades and satisfaRestriccions(par, slot, tauler):
+                if slot.orientacio == 0:
+                    # Verificar la letra actual del slot horizontal
+                    i = c - slot.posIn[1]
+                    if i >= 0 and tauler[f][c + i] != par[i]:
+                        continue
+                    i = c - slot.posIn[1] + len(par) - 1
+                    if i < len(tauler[f]) and tauler[f][i] != par[i]:
+                        continue
+                else:
+                    # Verificar la letra actual del slot vertical
+                    i = f - slot.posIn[0]
+                    if i >= 0 and tauler[f + i][c] != par[i]:
+                        continue
+                    i = f - slot.posIn[0] + len(par) - 1
+                    if i < len(tauler) and tauler[f + i][c] != par[i]:
+                        continue
+
+                palabras_validas.append(par)
+
+        slot.pars = palabras_validas
+
+        if not palabras_validas:
+            return False  # No hay palabras válidas para esta ranura
+
+    return True
+
 
 def backForwardChecking(tauler, slots, slot_id, palabras_utilizadas, anterior):
-    if slot_id == len(slots): #Si hem omplert tots els slots mirem si es una solucio completa
+    if slot_id == len(slots):
         return solucio(tauler)
 
-    slot = slots[slot_id] #Slot que estem mirant actualment
-    if slot.orientacio == 1:
-        print("tamare")
-    for par in slot.pars: #Per cada una de les paraules que van be en el slot
-        if par == 'ALTA':
-            print("a")
-        if satisfaRestriccions(par, slot, tauler) and ActualitzaDominis(tauler, slots, palabras_utilizadas, anterior): #Comprovem si satisfà les restriccions i que no l'haguem utilitzat abans i fem el forward checking per tal d'acelerar el procés
-            estatAnterior = copy.deepcopy(tauler) #Guardem el estat anterior del tauler per si fallem i hem de tornar enrere
-            if slot.orientacio == 0: #Horizontal (Insertem la paraula en l'slot)
-                f = slot.posIn[0]
-                c = slot.posIn[1]
-                for i, lletra in enumerate(par):
-                    tauler[f][c + i] = par[i]
-                    print(tauler)
-            else: #Vertical (Insertem la paraula en l'slot)
-                f = slot.posIn[0]
-                c = slot.posIn[1]
-                for i, lletra in enumerate(par):
-                    tauler[c + i][f] = par[i]
-                    print(tauler) 
-            palabras_utilizadas.append(par)
-            if backForwardChecking(tauler, slots, slot_id + 1, palabras_utilizadas, anterior): #Ens movem al següent slot
+    slot = slots[slot_id]
+
+    if not slot.pars:
+        return backForwardChecking(tauler, slots, slot_id + 1, palabras_utilizadas, anterior)
+
+    palabras_validas = [par for par in slot.pars if par not in palabras_utilizadas and satisfaRestriccions(par, slot, tauler)]
+
+    for par in palabras_validas:
+        palabras_utilizadas.append(par)
+
+        estatAnterior = copy.deepcopy(tauler)
+
+        if slot.orientacio == 0:
+            f, c = slot.posIn[0], slot.posIn[1]
+            for i, lletra in enumerate(par):
+                tauler[f][c + i] = par[i]
+        else:
+            f, c = slot.posIn[0], slot.posIn[1]
+            for i, lletra in enumerate(par):
+                tauler[c + i][f] = par[i]
+
+        # Realizar forward checking después de colocar la palabra
+        if ActualitzaDominis(tauler, slots, palabras_utilizadas):
+            if backForwardChecking(tauler, slots, slot_id + 1, palabras_utilizadas, anterior):
                 return True
-            # Si falle, desfem els canvis fets en la ultima iteració i treiem la paraula que hem provat del llistat de paraules usades per tal de que els altres slots també la puguin utilitzar
-            for slot in slots:
-                for el in anterior:
-                    if slot.long == len(el):
-                        slot.pars.append(el)
-                        while el in anterior:
-                            anterior.remove(el)
-            if par in palabras_utilizadas:
-                palabras_utilizadas.remove(par)
-            tauler = estatAnterior #Si el backtracking falla, restaurem el tauler i provem una altra paraula en l'slot
+
+        tauler = estatAnterior
+        palabras_utilizadas.remove(par)
     return False
+
 
             
 print("BACKTRACKINGS AMB DICCIONARI PETIT")
